@@ -72,50 +72,38 @@ family_names_two_chars=[
 class Party(ModelSQL, ModelView):
     __name__ = 'party.party'
 
-    # cn_full_name = fields.Char('Chinese full name')
+    cn_full_name = fields.Char('Chinese full name')
 
     @classmethod
     def create(cls, vlist):
         vlist = [x.copy() for x in vlist]
-        print('beg1---------------------------------')
-        print(vlist)
-        print('end1---------------------------------')
         for values in vlist:
             if (values['name'] != '') and (values['lastname'] == ''):
                 one_char = values['name'][0:1]
                 two_chars = values['name'][0:2]
+                name_representation = values['name_representation']
                 if (two_chars in family_names_two_chars):
                     family_name = values['name'][0:2]
                     given_name = values['name'][2:]
+                    name_representation = 'cjk'
                 elif (one_char in family_names_one_char):
                     family_name = values['name'][0:1]
                     given_name = values['name'][1:]
+                    name_representation = 'cjk'
                 else:
                     family_name = ''
                     given_name = values['name']
+                    name_representation = values['name_representation']
 
                 values['name'] = given_name
                 values['lastname'] = family_name
+                values['cn_full_name'] = family_name + given_name
+                values['name_representation'] = name_representation
 
         return super(Party, cls).create(vlist)
 
-    # @classmethod
-    # def search_rec_name(cls, name, clause):
-    #     """ Search for the name, lastname, PUID, any alternative IDs,
-    #         and any family and / or given name from the person_names
-    #     """
-    #     if clause[1].startswith('!') or clause[1].startswith('not '):
-    #         bool_op = 'AND'
-    #     else:
-    #         bool_op = 'OR'
-    #     return [bool_op,
-    #             ('ref',) + tuple(clause[1:]),
-    #             ('alternative_ids.code',) + tuple(clause[1:]),
-    #             ('federation_account',) + tuple(clause[1:]),
-    #             ('contact_mechanisms.value',) + tuple(clause[1:]),
-    #             ('person_names.family',) + tuple(clause[1:]),
-    #             ('person_names.given',) + tuple(clause[1:]),
-    #             ('name',) + tuple(clause[1:]),
-    #             ('lastname',) + tuple(clause[1:]),
-    #             ]
+    @classmethod
+    def search_rec_name(cls, name, clause):
+        orig = super(Party, cls).search_rec_name(name, clause)
+        return orig + [('cn_full_name',) + tuple(clause[1:])]
 

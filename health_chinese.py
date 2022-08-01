@@ -81,18 +81,18 @@ class Party(ModelSQL, ModelView):
             if (values['name'] != '') and (values['lastname'] == ''):
                 one_char = values['name'][0:1]
                 two_chars = values['name'][0:2]
-                name_representation = values['name_representation']
-                if (two_chars in family_names_two_chars):
-                    family_name = values['name'][0:2]
-                    given_name = values['name'][2:]
+                name = values['name']
+                if (len(name) > 2 and two_chars in family_names_two_chars):
+                    family_name = name[0:2]
+                    given_name = name[2:]
                     name_representation = 'cjk'
-                elif (one_char in family_names_one_char):
-                    family_name = values['name'][0:1]
-                    given_name = values['name'][1:]
+                elif (len(name) > 1 and one_char in family_names_one_char):
+                    family_name = name[0:1]
+                    given_name = name[1:]
                     name_representation = 'cjk'
                 else:
                     family_name = ''
-                    given_name = values['name']
+                    given_name = name
                     name_representation = values['name_representation']
 
                 values['name'] = given_name

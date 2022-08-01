@@ -21,13 +21,10 @@
 ##############################################################################
 
 from trytond.pool import Pool
-from . import health_crypto
+from . import health_chinese
 
 
 def register():
     Pool.register(
-        health_crypto.PatientPrescriptionOrder,
-        health_crypto.BirthCertificate,
-        health_crypto.DeathCertificate,
-        health_crypto.PatientEvaluation,
-        module='health_crypto', type_='model')
+        health_chinese.Party,
+        module='health_chinese', type_='model')

@@ -50,22 +50,22 @@ for dep in info.get('depends', []):
                 (dep, major_version, minor_version, major_version,
                     minor_version + 1))
 
-setup(name='gnuhealth_crypto',
+setup(name='gnuhealth_chinese',
     version=info.get('version', '0.0.1'),
-    description=info.get('description', 'GNU Health Crypto Module'),
+    description=info.get('description', 'GNU Health Chinese Module'),
     long_description=read('README'),
     author='GNU Solidario',
     author_email='health@gnusolidario.org',
     url='https://www.gnuhealth.org',
     download_url='http://ftp.gnu.org/gnu/health/',
-    package_dir={'trytond.modules.health_crypto': '.'},
+    package_dir={'trytond.modules.health_chinese': '.'},
     packages=[
-        'trytond.modules.health_crypto',
-        'trytond.modules.health_crypto.tests',
+        'trytond.modules.health_chinese',
+        'trytond.modules.health_chinese.tests',
         ],
 
     package_data={
-        'trytond.modules.health_crypto': info.get('xml', []) \
+        'trytond.modules.health_chinese': info.get('xml', []) \
             + info.get('translation', []) \
             + ['tryton.cfg', 'view/*.xml', 'doc/*.rst', 'locale/*.po',
                'report/*.fodt', 'icons/*.svg'],
@@ -95,7 +95,7 @@ setup(name='gnuhealth_crypto',
     zip_safe=False,
     entry_points="""
     [trytond.modules]
-    health_crypto = trytond.modules.health_crypto
+    health_chinese = trytond.modules.health_chinese
     """,
     test_suite='tests',
     test_loader='trytond.test_loader:Loader',

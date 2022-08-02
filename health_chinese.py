@@ -24,6 +24,7 @@ from trytond.rpc import RPC
 from trytond.pyson import Eval, Not, Bool, Equal, Or
 import hashlib
 import json
+import pypinyin
 
 
 __all__ = ['Party']
@@ -73,6 +74,7 @@ class Party(ModelSQL, ModelView):
     __name__ = 'party.party'
 
     cn_full_name = fields.Char('Chinese full name')
+    cn_full_name_pinyin = fields.Char('Pinyin of Chinese full name')
 
     @classmethod
     def create(cls, vlist):
@@ -98,6 +100,7 @@ class Party(ModelSQL, ModelView):
                 values['name'] = given_name
                 values['lastname'] = family_name
                 values['cn_full_name'] = family_name + given_name
+                values['cn_full_name_pinyin'] = ''.join(pypinyin.lazy_pinyin(family_name + given_name))
                 values['name_representation'] = name_representation
 
         return super(Party, cls).create(vlist)
@@ -105,5 +108,6 @@ class Party(ModelSQL, ModelView):
     @classmethod
     def search_rec_name(cls, name, clause):
         orig = super(Party, cls).search_rec_name(name, clause)
-        return orig + [('cn_full_name',) + tuple(clause[1:])]
+        return orig + [('cn_full_name',) + tuple(clause[1:]),
+                       ('cn_full_name_pinyin',) + tuple(clause[1:])]
 

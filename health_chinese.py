@@ -22,6 +22,7 @@
 from trytond.model import ModelView, ModelSQL, fields
 from trytond.rpc import RPC
 from trytond.pyson import Eval, Not, Bool, Equal, Or
+from trytond.pool import Pool
 import hashlib
 import json
 import pypinyin
@@ -29,7 +30,7 @@ import pypinyin
 
 __all__ = ['Party']
 
-family_names_one_char=[
+lastnames_one_char=[
     '赵', '钱', '孙', '李', '周', '吴', '郑', '王', '冯', '陈', '褚', '卫', '蒋', '沈',
     '韩', '杨', '朱', '秦', '尤', '许', '何', '吕', '施', '张', '孔', '曹', '严', '华', 
     '金', '魏', '陶', '姜', '戚', '谢', '邹', '喻', '柏', '水', '窦', '章', '云', '苏', 
@@ -62,7 +63,7 @@ family_names_one_char=[
     '佘', '佴', '伯', '赏', '墨', '哈', '谯', '笪', '年', '爱', '阳', '佟', '言', '福', 
     '百', '家', '姓', '终', '仉', '督', '归', '海', '毛']
 
-family_names_two_chars=[
+lastnames_two_chars=[
     '万俟', '司马', '上官', '欧阳', '夏侯', '诸葛', '闻人', '东方', '赫连', '皇甫', '尉迟',
     '公羊', '澹台', '公冶', '宗政', '濮阳', '淳于', '单于', '太叔', '申屠', '公孙', '仲孙',
     '轩辕', '令狐', '钟离', '宇文', '长孙', '慕容', '鲜于', '闾丘', '司徒', '司空', '亓官',
@@ -77,31 +78,83 @@ class Party(ModelSQL, ModelView):
     cn_full_name_pinyin = fields.Char('Pinyin of Chinese full name')
 
     @classmethod
+    def write(cls, *args):
+        actions = iter(args)
+        args = []
+        for parties, values in zip(actions, actions):
+            values = values.copy()
+            
+            name = parties[0].name
+            lastname = parties[0].lastname
+            cn_full_name = parties[0].cn_full_name
+            cn_full_name_pinyin = parties[0].cn_full_name_pinyin
+            name_representation = parties[0].name_representation
+            
+            if 'name' in values:
+                name = values['name']
+            if 'lastname' in values:
+                lastname = values['lastname']
+
+            name, lastname, name_representation = cls.get_cn_name_info(
+                name, lastname, name_representation)
+            cn_full_name = lastname + name
+
+            values['name'] = name
+            values['lastname'] = lastname
+            values['cn_full_name'] = cn_full_name
+            values['cn_full_name_pinyin'] = cls.get_cn_full_name_pinyin(cn_full_name)
+            values['name_representation'] = name_representation
+
+            args.append(parties)
+            args.append(values)
+            
+        return super(Party, cls).write(*args)
+
+    @classmethod
+    def get_cn_full_name_pinyin(cls, fullname):
+        return ''.join(pypinyin.lazy_pinyin(fullname))
+
+    @classmethod
+    def get_cn_name_info(cls, name, lastname, name_representation):
+        name_new = name
+        if (name != '') and (lastname == ''):
+            one_char = name[0:1]
+            two_chars = name[0:2]
+            if (len(name) > 2 and two_chars in lastnames_two_chars):
+                lastname = name[0:2]
+                name_new = name[2:]
+                name_representation = 'cjk'
+            elif (len(name) > 1 and one_char in lastnames_one_char):
+                lastname = name[0:1]
+                name_new = name[1:]
+                name_representation = 'cjk'
+            else:
+                lastname = ''
+                name_new = name
+                name_representation = name_representation
+        else:
+            name_new = name
+            lastname = lastname
+            
+        return (name_new, lastname, name_representation)
+
+    @classmethod
     def create(cls, vlist):
         vlist = [x.copy() for x in vlist]
         for values in vlist:
-            if (values['name'] != '') and (values['lastname'] == ''):
-                one_char = values['name'][0:1]
-                two_chars = values['name'][0:2]
-                name = values['name']
-                if (len(name) > 2 and two_chars in family_names_two_chars):
-                    family_name = name[0:2]
-                    given_name = name[2:]
-                    name_representation = 'cjk'
-                elif (len(name) > 1 and one_char in family_names_one_char):
-                    family_name = name[0:1]
-                    given_name = name[1:]
-                    name_representation = 'cjk'
-                else:
-                    family_name = ''
-                    given_name = name
-                    name_representation = values['name_representation']
+            name = values['name']
+            lastname = values['lastname']
+            name_representation = values['name_representation']
 
-                values['name'] = given_name
-                values['lastname'] = family_name
-                values['cn_full_name'] = family_name + given_name
-                values['cn_full_name_pinyin'] = ''.join(pypinyin.lazy_pinyin(family_name + given_name))
-                values['name_representation'] = name_representation
+            name, lastname, name_representation = cls.get_cn_name_info(
+                name, lastname, name_representation)
+            cn_full_name = lastname + name
+
+            values['name'] = name
+            values['lastname'] = lastname
+            values['cn_full_name'] = cn_full_name
+            values['cn_full_name_pinyin'] = cls.get_cn_full_name_pinyin(cn_full_name)
+            values['name_representation'] = name_representation
 
         return super(Party, cls).create(vlist)
 

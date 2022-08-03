@@ -30,7 +30,7 @@ import pypinyin
 
 __all__ = ['Party']
 
-lastnames_one_char=[
+one_char_lastnames=[
     '赵', '钱', '孙', '李', '周', '吴', '郑', '王', '冯', '陈', '褚', '卫', '蒋', '沈',
     '韩', '杨', '朱', '秦', '尤', '许', '何', '吕', '施', '张', '孔', '曹', '严', '华', 
     '金', '魏', '陶', '姜', '戚', '谢', '邹', '喻', '柏', '水', '窦', '章', '云', '苏', 
@@ -63,7 +63,7 @@ lastnames_one_char=[
     '佘', '佴', '伯', '赏', '墨', '哈', '谯', '笪', '年', '爱', '阳', '佟', '言', '福', 
     '百', '家', '姓', '终', '仉', '督', '归', '海', '毛']
 
-lastnames_two_chars=[
+two_chars_lastnames=[
     '万俟', '司马', '上官', '欧阳', '夏侯', '诸葛', '闻人', '东方', '赫连', '皇甫', '尉迟',
     '公羊', '澹台', '公冶', '宗政', '濮阳', '淳于', '单于', '太叔', '申屠', '公孙', '仲孙',
     '轩辕', '令狐', '钟离', '宇文', '长孙', '慕容', '鲜于', '闾丘', '司徒', '司空', '亓官',
@@ -120,11 +120,11 @@ class Party(ModelSQL, ModelView):
         if (name != '') and (lastname == ''):
             one_char = name[0:1]
             two_chars = name[0:2]
-            if (len(name) > 2 and two_chars in lastnames_two_chars):
+            if (len(name) > 2 and two_chars in two_chars_lastnames):
                 lastname = name[0:2]
                 name_new = name[2:]
                 name_representation = 'cjk'
-            elif (len(name) > 1 and one_char in lastnames_one_char):
+            elif (len(name) > 1 and one_char in one_char_lastnames):
                 lastname = name[0:1]
                 name_new = name[1:]
                 name_representation = 'cjk'

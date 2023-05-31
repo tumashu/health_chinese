@@ -20,9 +20,9 @@
 #
 ##############################################################################
 from trytond.model import ModelView, ModelSQL, fields
+from trytond.pool import PoolMeta
 from trytond.rpc import RPC
 from trytond.pyson import Eval, Not, Bool, Equal, Or
-from trytond.pool import Pool
 import hashlib
 import json
 import pypinyin
